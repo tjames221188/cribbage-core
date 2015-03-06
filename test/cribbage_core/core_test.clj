@@ -25,7 +25,7 @@
 
 (deftest cards-maintained?
   (testing
-    "Ensures no cards are lost throughout the flow of the game"
+    "Make sure no cards are lost throughout the flow of the game"
     (let [state (atom nil)]
       "Initial state"
       (g/new-game! state 3)
@@ -35,9 +35,15 @@
       (is (valid-deck? @state))
       "Turn over the middle card"
       (g/turn-card! state)
-      (is (valid-deck? @state))))
-  )
+      (is (valid-deck? @state)))))
 
-(deftest test-box)
+(deftest test-box
+  "Make sure populate-box works for all numbers of players"
+  (let [two-players   (g/new-game 2)
+        three-players (g/new-game 3)
+        four-players  (g/new-game 4)]
+    (is (and (valid-deck? (g/populate-box [[0 1] [2 3]] two-players))
+             (valid-deck? (g/populate-box [[0] [1] [2]] three-players))
+             (valid-deck? (g/populate-box [[0] [1] [2] [3]] four-players))))))
 
 
