@@ -14,12 +14,25 @@
   [n coll]
   (concat (take n coll) (drop (inc n) coll)))
 
+(defn update
+  [m k f]
+  (assoc m k (f (get m k))))
+
 (defn cartesian-product [colls]
   (if (empty? colls)
     '(())
     (for [x (first colls)
           more (cartesian-product (rest colls))]
       (cons x more))))
+
+#(flatten (reverse (split-at (mod % (count %2)) %2)))
+
+(defn rotate
+  [coll n]
+  (let [pivot (mod n (count coll))]
+    (->> (split-at pivot coll)
+        reverse
+        (apply concat))))
 
 (defn value
   [rank-values card]
@@ -35,6 +48,12 @@
       (map (partial zipmap card-keys))
       (map #(assoc %1 :value (value rank-values %1)))
       (map #(assoc %1 :index (index rank-indices %1)))))
+
+(defn deal-equal
+  "Deals an equal number of cards to each player.
+  Any remainder cards are dropped"
+  [num-players cards]
+  (apply map vector (partition num-players cards)))
 
 (defn powerset [coll]
   (reduce (fn [a x]
@@ -126,6 +145,13 @@
      (count (longest-flush 4 hand))
      (if (one-for-'is-nob? hand)
        1 0)))
+
+(defn whos-turn?
+  [turn-number num-players]
+  (first (rotate (range num-players) turn-number)))
+
+(def whos-turn?-memo
+  (memoize whos-turn?))
 
 
 (comment
