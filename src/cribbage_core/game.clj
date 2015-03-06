@@ -40,6 +40,7 @@
   [state num-players]
   (reset! state (new-game num-players)))
 
+; TODO this does not work for 2 players as they need to throw 2 cards into the box
 (defn populate-box
   [indices {:keys [hands box] :as state}]
   (let [new-hands (map p/drop-nth indices hands)
@@ -75,6 +76,4 @@
 (defn turn-card!
   [state]
   (swap! state turn-card))
-
-
 
