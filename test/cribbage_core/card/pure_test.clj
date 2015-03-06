@@ -12,3 +12,9 @@
       "z is not a subset of x or y"
       (is (and (not (subset? z x))
                (not (subset? z y)))))))
+
+(deftest test-all-empty?
+  (let [empty [[] [] [] []]
+        not-empty [[] [] [] [] [1]]]
+    (is (and (all-empty? empty)
+             (not (all-empty? not-empty))))))

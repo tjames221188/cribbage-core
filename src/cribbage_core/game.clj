@@ -2,9 +2,6 @@
   (:require [cribbage-core.cards.pure :as p]
             [cribbage-core.cards.values :refer [crib ace-low]]))
 
-
-
-
 (defn deal
   [{:keys [num-players] :as state}]
   (let [cards (shuffle (p/new-deck crib ace-low))
@@ -14,39 +11,49 @@
                             (if three-handed? (inc n) n))
         to-deal (take num-cards-to-deal cards)
         deck (drop num-cards-to-deal cards)]
-    (-> (merge state
-               {:deck  deck
-                :hands (p/deal-equal num-players to-deal)})
-        (assoc :box (if three-handed? [(last to-deal)] [])))))
+    (assoc state :deck deck
+                 :hands (p/deal-equal num-players to-deal)
+                 :box (if three-handed? [(last to-deal)] [])
+                 :played-cards (repeat num-players []))))
 
 
 
 (defn next-hand
-  [{:keys [num-players dealer hand-number] :as state}]
+  [{:keys [hand-number] :as state}]
   (-> (assoc state :hand-number (inc hand-number)
                    :turn-number 0)
       deal))
 
+(defn next-hand!
+  [state]
+  (swap! state next-hand))
+
 (defn new-game
   [num-players]
-  (let [new-state {:dealer         0
-                   :running-scores (vec (repeat num-players 0))
-                   :num-players num-players
-                   :hand-number 0
-                   :turn-number 0}]
+  (let [new-state {:dealer          0
+                   :running-scores  (vec (repeat num-players 0))
+                   :num-players     num-players
+                   :hand-number     0
+                   :turn-number     0}]
     (deal new-state)))
 
 (defn new-game!
   [state num-players]
   (reset! state (new-game num-players)))
 
-; TODO this does not work for 2 players as they need to throw 2 cards into the box
+(defn discard-box-cards
+  [hand indices]
+  (let [discarded (map (partial get hand) indices)
+        remaining (remove (set discarded) hand)]
+    (vector discarded remaining)))
+
 (defn populate-box
   [indices {:keys [hands box] :as state}]
-  (let [new-hands (map p/drop-nth indices hands)
-        new-box (concat box (map nth hands indices))]
+  (let [x (map discard-box-cards hands indices)
+        new-box (mapcat first x)
+        new-hands (map second x)]
     (assoc state :hands new-hands
-                 :box new-box)))
+                 :box (concat box new-box))))
 
 (defn populate-box!
   [indices state]
@@ -66,7 +73,7 @@
   [{:keys [deck dealer] :as state}]
   (let [n (rand-int (count deck))
         card (nth deck n)
-        new-deck (p/drop-nth n deck)
+        new-deck (p/drop-nth deck n)
         new-state (assoc state :deck new-deck
                                :turn-card card)]
     (if (two-for-his-heels? new-state)
@@ -76,4 +83,7 @@
 (defn turn-card!
   [state]
   (swap! state turn-card))
+
+(defn take-turn
+  [{:keys [turn-number] :as state}])
 

@@ -11,12 +11,17 @@
   [:suit :rank :value])
 
 (defn drop-nth
-  [n coll]
+  [coll n]
   (concat (take n coll) (drop (inc n) coll)))
 
 (defn update
   [m k f]
   (assoc m k (f (get m k))))
+
+(defn all-empty?
+  "Returns true if every coll in `colls` is empty"
+  [colls]
+  (every? empty? colls))
 
 (defn cartesian-product [colls]
   (if (empty? colls)
@@ -24,8 +29,6 @@
     (for [x (first colls)
           more (cartesian-product (rest colls))]
       (cons x more))))
-
-#(flatten (reverse (split-at (mod % (count %2)) %2)))
 
 (defn rotate
   [coll n]

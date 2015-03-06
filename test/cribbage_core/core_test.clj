@@ -8,6 +8,7 @@
   [state]
   (let [cards (concat (:deck state)
                 (apply concat (:hands state))
+                (apply concat (:played-cards state))
                 (:box state))]
     (if (:turn-card state)
       (conj cards (:turn-card state))
@@ -30,11 +31,13 @@
       (g/new-game! state 3)
       (is (valid-deck? @state))
       "Select box cards"
-      (g/populate-box! [0 1 2] state)
+      (g/populate-box! [[0] [1] [2]] state)
       (is (valid-deck? @state))
       "Turn over the middle card"
       (g/turn-card! state)
       (is (valid-deck? @state))))
   )
+
+(deftest test-box)
 
 
