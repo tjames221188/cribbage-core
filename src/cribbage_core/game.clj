@@ -14,14 +14,17 @@
     (assoc state :deck deck
                  :hands (p/deal-equal num-players to-deal)
                  :box (if three-handed? [(last to-deal)] [])
-                 :played-cards (repeat num-players []))))
+                 :played-cards (repeat num-players [])
+                 :dead-cards (repeat num-players []))))
 
 
 
 (defn next-hand
   [{:keys [hand-number] :as state}]
   (-> (assoc state :hand-number (inc hand-number)
-                   :turn-number 0)
+                   :turn-number 0
+                   ; TODO - next dealer
+                   )
       deal))
 
 (defn next-hand!
@@ -84,6 +87,31 @@
   [state]
   (swap! state turn-card))
 
+(defn last-card-score
+  [{:keys [played-cards hands] :as state}]
+  (cond (p/thirty-one? played-cards) 2
+        (p/no-moves-remaining? state) 1
+        :else 0))
+
+(defn peg-pair-score
+  [{:keys [played-cards]}]
+  )
+
+(defn peg-run-score
+  [{:keys [played-cards]}]
+  )
+
+(defn peg-score
+  [played-cards]
+  (let [score 0]
+    ))
+
 (defn take-turn
-  [{:keys [turn-number] :as state}])
+  [{:keys [turn-number num-players played-cards hands] :as state} card]
+  (if (p/can-go? played-cards card)
+    (let [turn (p/whos-turn? turn-number num-players)
+          new-hands (p/update hands turn (partial remove #{card}))
+          new-played-cards (p/update played-cards turn (partial cons card))]
+      )
+    state))
 

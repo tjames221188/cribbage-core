@@ -72,6 +72,29 @@
        (apply +)
        (= 15)))
 
+(defn total-value
+  [played-cards]
+  (->> (mapcat identity played-cards)
+       (map :value)
+       (reduce +)))
+
+(defn thirty-one?
+  [played-cards]
+  (= 31 (total-value played-cards)))
+
+(defn can-go?
+  [played-cards card]
+  (<= 31 (+ (total-value played-cards) (:value card))))
+
+(defn no-moves-remaining?
+  [{:keys [played-cards hands]}]
+  (let [current-total (total-value played-cards)
+        max-value (- 31 current-total)
+        remaining-card-values (->> (mapcat identity hands)
+                                   (map :value))]
+     (or (empty? remaining-card-values)
+         (empty? (filter (partial >= max-value) remaining-card-values)))))
+
 (defn subset?
   "Returns true if `x` is a subset of `y`, false otherwise."
   [x y]
