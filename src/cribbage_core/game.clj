@@ -93,13 +93,27 @@
         (p/no-moves-remaining? state) 1
         :else 0))
 
+(defn in-played-order
+  "Returns the last `n` cards played  or all cards if `n` is not supplied"
+  ([played-cards turn]
+    (in-played-order played-cards turn (count played-cards)))
+  ([played-cards turn n]
+   (let [rotated (-> (reverse played-cards)
+                     (p/rotate turn))]
+     (->> (map reverse rotated)
+          (apply interleave)
+          (take n)))))
+
 (defn peg-pair-score
-  [{:keys [played-cards]}]
-  )
+  [{:keys [played-cards turn-number]}]
+  (let [[fst & rst] (in-played-order played-cards turn-number 4)]
+    (-> (take-while (partial = fst) rst)
+        count
+        (* 2))))
 
 (defn peg-run-score
   [{:keys [played-cards]}]
-  )
+  (let [[f & r] played-cards]))
 
 (defn peg-score
   [played-cards]
