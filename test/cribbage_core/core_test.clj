@@ -46,4 +46,42 @@
              (valid-deck? (g/populate-box [[0] [1] [2]] three-players))
              (valid-deck? (g/populate-box [[0] [1] [2] [3]] four-players))))))
 
+(deftest test-in-played-order
+  (let [played-cards4 [[{:index 1} {:index 5}]
+                      [{:index 2} {:index 6}]
+                      [{:index 3} {:index 7}]
+                      [{:index 4} {:index 8}]]
+        played-cards3 [[{:index 1} {:index 4} {:index 7}]
+                       [{:index 2} {:index 5} {:index 8}]
+                       [{:index 3} {:index 6}]]
+        played-cards2 [[{:index 1} {:index 3} {:index 5} {:index 7}]
+                       [{:index 2} {:index 4} {:index 6} {:index 8}]]]
+    (is (= [1 2 3 4 5 6 7 8]
+           (map :index (g/in-played-order played-cards4 3))
+           (map :index (g/in-played-order played-cards3 2))
+           (map :index (g/in-played-order played-cards2 1))))))
+
+(deftest test-peg-pair-score
+  "Make sure pegging pairs/triples are awarded correctly"
+  (let [pair    [[{:index 1} {:index 4}]
+                 [{:index 2} {:index 4}]
+                 [{:index 3}]]
+        triple  [[{:index 1} {:index 4}]
+                 [{:index 2} {:index 4}]
+                 [{:index 4}]]
+        quad    [[{:index 1} {:index 4}]
+                 [{:index 4} {:index 4}]
+                 [{:index 4}]]]
+    (is (= 2 (g/peg-pair-score {:played-cards pair :dealer 2})))
+    (is (= 6 (g/peg-pair-score {:played-cards triple :dealer 2})))
+    (is (= 12 (g/peg-pair-score {:played-cards quad :dealer 2})))))
+
+(deftest test-peg-run-score
+  "Make sure that pegging runs are awarded correctly"
+  (let [played-cards1 [[{:index 9} {:index 3}]
+                       [{:index 2}]
+                       [{:index 4}]]]
+    (is (= 3 (g/peg-run-score {:played-cards played-cards1 :dealer 2}))))
+  )
+
 

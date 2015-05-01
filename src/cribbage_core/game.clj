@@ -95,28 +95,37 @@
 
 (defn in-played-order
   "Returns the last `n` cards played  or all cards if `n` is not supplied"
-  ([played-cards turn]
-    (in-played-order played-cards turn (count played-cards)))
-  ([played-cards turn n]
-   (let [rotated (-> (reverse played-cards)
-                     (p/rotate turn))]
-     (->> (map reverse rotated)
-          (apply interleave)
-          (take n)))))
+  ([played-cards dealer]
+    (in-played-order played-cards dealer (reduce + (map count played-cards))))
+  ([played-cards dealer n]
+   (let [in-order (->> (p/rotate played-cards (inc dealer))
+                       (filter seq)
+                       (apply p/interleave-all))]
+     (nthrest in-order (- (count in-order) n)))))
 
 (defn peg-pair-score
-  [{:keys [played-cards turn-number]}]
-  (let [[fst & rst] (in-played-order played-cards turn-number 4)]
-    (-> (take-while (partial = fst) rst)
-        count
-        (* 2))))
+  [{:keys [played-cards dealer]}]
+  (let [[fst & _ :as cards] (->> (in-played-order played-cards dealer 4)
+                                 reverse)]
+    (-> (take-while #(= (:index %) (:index fst)) cards)
+        p/powerset                                          ;TODO - not powerset - just need combinations of length == 2
+        #_count)))
+
+(defn consecutive?
+  [cards]
+  (let [indices (map :index cards)]
+    (->> (partition 2 1 indices)
+         (every? #(= (inc (first %)) (second %))))))
 
 (defn peg-run-score
-  [{:keys [played-cards]}]
-  (let [[f & r] played-cards]))
+  [{:keys [played-cards dealer]}]
+  (loop [cards (in-played-order played-cards dealer)]
+    (cond (<= (count cards) 2) 0
+          (consecutive? (sort-by :index cards)) (count cards)
+          :else (recur (rest cards)))))
 
 (defn peg-score
-  [played-cards]
+  [state]
   (let [score 0]
     ))
 
